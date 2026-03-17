@@ -123,35 +123,37 @@ psql -U postgres -d twinmind -f scripts/01_create_schema.sql
 
 ```
 twinmind/
-Γö£ΓöÇΓöÇ app/
-Γöé   Γö£ΓöÇΓöÇ page.tsx                 # Landing page
-Γöé   Γö£ΓöÇΓöÇ layout.tsx               # Root layout with metadata
-Γöé   Γö£ΓöÇΓöÇ globals.css              # Theme tokens and styles
-Γöé   Γö£ΓöÇΓöÇ quiz/
-Γöé   Γöé   ΓööΓöÇΓöÇ page.tsx             # Interactive quiz (15 questions)
-Γöé   Γö£ΓöÇΓöÇ dashboard/
-Γöé   Γöé   ΓööΓöÇΓöÇ page.tsx             # Personality profile visualization
-Γöé   Γö£ΓöÇΓöÇ simulator/
-Γöé   Γöé   ΓööΓöÇΓöÇ page.tsx             # What-if scenario simulator
-Γöé   Γö£ΓöÇΓöÇ admin/
-Γöé   Γöé   ΓööΓöÇΓöÇ page.tsx             # Admin analytics dashboard
-Γöé   ΓööΓöÇΓöÇ api/
-Γöé       Γö£ΓöÇΓöÇ quiz-analysis/       # Quiz response analysis endpoint
-Γöé       Γö£ΓöÇΓöÇ predict/             # Behavior prediction endpoint
-Γöé       ΓööΓöÇΓöÇ simulate/            # Trait simulation endpoint
-Γö£ΓöÇΓöÇ components/
-Γöé   ΓööΓöÇΓöÇ ui/                      # shadcn/ui components
-Γö£ΓöÇΓöÇ lib/
-Γöé   Γö£ΓöÇΓöÇ api.ts                   # API service client
-Γöé   ΓööΓöÇΓöÇ utils.ts                 # Utility functions
-Γö£ΓöÇΓöÇ backend/
-Γöé   Γö£ΓöÇΓöÇ main.py                  # FastAPI application
-Γöé   Γö£ΓöÇΓöÇ personality_model.py     # ML analysis engine
-Γöé   Γö£ΓöÇΓöÇ pyproject.toml           # Python dependencies
-Γöé   Γö£ΓöÇΓöÇ .env.example             # Environment template
-Γöé   ΓööΓöÇΓöÇ README.md                # Backend documentation
-ΓööΓöÇΓöÇ scripts/
-    ΓööΓöÇΓöÇ 01_create_schema.sql     # Database migrations
++-- app/
+|   +-- page.tsx                 # Landing page
+|   +-- layout.tsx               # Root layout with metadata
+|   +-- globals.css              # Theme tokens and styles
+|   +-- quiz/
+|   |   +-- page.tsx             # Interactive quiz (15 questions)
+|   +-- dashboard/
+|   |   +-- page.tsx             # Personality profile visualization
+|   +-- simulator/
+|   |   +-- page.tsx             # What-if scenario simulator
+|   +-- twin-chat/
+|   |   +-- page.tsx             # AI twin chat
+|   +-- admin/
+|   |   +-- page.tsx             # Admin analytics dashboard
+|   +-- api/
+|       +-- quiz-analysis/       # Quiz response analysis endpoint
+|       +-- predict/             # Behavior prediction endpoint
+|       +-- simulate/            # Trait simulation endpoint
++-- components/
+|   +-- ui/                      # shadcn/ui components
++-- lib/
+|   +-- api.ts                   # API service client
+|   +-- utils.ts                 # Utility functions
++-- backend/
+|   +-- app.py                   # FastAPI application
+|   +-- personality_model.py     # ML analysis engine
+|   +-- requirements.txt         # Python dependencies
+|   +-- .env.example             # Environment template
+|   +-- README.md                # Backend documentation
++-- scripts/
+    +-- 01_create_schema.sql     # Database migrations
 ```
 
 ## Features
@@ -397,4 +399,4 @@ Contributions welcome! Please:
 
 ---
 
-**Built with Γ¥ñ∩╕Å using Next.js, FastAPI, and PostgreSQL**
+**Built with Next.js, FastAPI, and scikit-learn**
