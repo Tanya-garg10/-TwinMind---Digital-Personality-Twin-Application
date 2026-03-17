@@ -15,33 +15,33 @@ AI-powered personality analysis and simulation platform. Complete production-rea
 ## Architecture
 
 ```
-ΓöîΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÉ
-Γöé                      Frontend (Next.js 16)                  Γöé
-Γöé  - Landing page with feature overview                       Γöé
-Γöé  - Interactive personality quiz (15 questions)              Γöé
-Γöé  - Dashboard with trait visualization (Radar, Bar charts)   Γöé
-Γöé  - Scenario simulator with what-if analysis                 Γöé
-Γöé  - Admin dashboard with analytics                           Γöé
-ΓööΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓö¼ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÿ
-                     Γöé REST API (Next.js API Routes)
-ΓöîΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓû╝ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÉ
-Γöé            Backend (FastAPI - Python 3.10+)                 Γöé
-Γöé  - Quiz analysis engine                                     Γöé
-Γöé  - ML personality model (scikit-learn)                       Γöé
-Γöé  - Behavior prediction system                               Γöé
-Γöé  - Scenario simulation engine                               Γöé
-Γöé  - Trait confidence scoring                                 Γöé
-ΓööΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓö¼ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÿ
-                     Γöé PostgreSQL Driver
-ΓöîΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓû╝ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÉ
-Γöé      Database (Supabase PostgreSQL + Auth)                  Γöé
-Γöé  - Users table                                              Γöé
-Γöé  - Quiz responses                                           Γöé
-Γöé  - Personality traits (with confidence)                     Γöé
-Γöé  - Predictions and reasoning                                Γöé
-Γöé  - Twin simulations                                         Γöé
-Γöé  - Row Level Security (RLS) enabled                         Γöé
-ΓööΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÿ
++-------------------------------------------------------------+
+|                    Frontend (Next.js 16)                    |
+|  - Landing page with feature overview                       |
+|  - Interactive personality quiz (15 questions)              |
+|  - Dashboard with trait visualization (Radar, Bar charts)   |
+|  - Scenario simulator with what-if analysis                 |
+|  - Admin dashboard with analytics                           |
++--------------------+----------------------------------------+
+                     | REST API (Next.js API Routes)
++--------------------v----------------------------------------+
+|            Backend (FastAPI - Python 3.10+)                 |
+|  - Quiz analysis engine                                     |
+|  - ML personality model (scikit-learn)                      |
+|  - Behavior prediction system                               |
+|  - Scenario simulation engine                               |
+|  - Trait confidence scoring                                 |
++--------------------+----------------------------------------+
+                     | PostgreSQL Driver
++--------------------v----------------------------------------+
+|      Database (Supabase PostgreSQL + Auth)                  |
+|  - Users table                                              |
+|  - Quiz responses                                           |
+|  - Personality traits (with confidence)                     |
+|  - Predictions and reasoning                                |
+|  - Twin simulations                                         |
+|  - Row Level Security (RLS) enabled                         |
++-------------------------------------------------------------+
 ```
 
 ## Quick Start - Local Development
