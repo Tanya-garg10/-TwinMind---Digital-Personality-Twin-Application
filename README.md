@@ -1,400 +1,147 @@
-# TwinMind - Digital Personality Twin Application
+# 🧠 TwinMind — Digital Personality Twin
 
-AI-powered personality analysis and simulation platform. Complete production-ready application with React/Next.js frontend, FastAPI backend, and Supabase PostgreSQL database.
+> AI-powered personality analysis, decision prediction, and your digital twin that thinks like you.
 
-## Project Overview
+---
 
-**TwinMind** is a sophisticated web application that analyzes user personality through a scientifically-designed quiz, leveraging machine learning to:
+## 🚀 What is TwinMind?
 
-- Extract 5 key personality traits (Risk Tolerance, Logic vs Emotion, Social Dynamics, Leadership, Financial Patterns)
-- Predict behavior in various real-world scenarios
-- Simulate "what-if" personality modifications
-- Provide confidence scoring and reasoning for predictions
-- Display personalized insights through interactive dashboards
+TwinMind creates a **digital clone of your personality** based on a quiz.
+Once your twin is built, it can:
+- Predict what decisions you'd make in real scenarios
+- Chat with you and answer as you would
+- Show how your choices change if your personality traits shift
 
-## Architecture
+---
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                      Frontend (Next.js 16)                  │
-│  - Landing page with feature overview                       │
-│  - Interactive personality quiz (15 questions)              │
-│  - Dashboard with trait visualization (Radar, Bar charts)   │
-│  - Scenario simulator with what-if analysis                 │
-│  - Admin dashboard with analytics                           │
-└────────────────────┬────────────────────────────────────────┘
-                     │ REST API (Next.js API Routes)
-┌────────────────────▼────────────────────────────────────────┐
-│            Backend (FastAPI - Python 3.10+)                 │
-│  - Quiz analysis engine                                     │
-│  - ML personality model (scikit-learn)                       │
-│  - Behavior prediction system                               │
-│  - Scenario simulation engine                               │
-│  - Trait confidence scoring                                 │
-└────────────────────┬────────────────────────────────────────┘
-                     │ PostgreSQL Driver
-┌────────────────────▼────────────────────────────────────────┐
-│      Database (Supabase PostgreSQL + Auth)                  │
-│  - Users table                                              │
-│  - Quiz responses                                           │
-│  - Personality traits (with confidence)                     │
-│  - Predictions and reasoning                                │
-│  - Twin simulations                                         │
-│  - Row Level Security (RLS) enabled                         │
-└─────────────────────────────────────────────────────────────┘
-```
+## ✨ Features
 
-## Quick Start - Local Development
+### 1. 🧩 Personality Quiz
+- 30-question bank, 3 randomly picked per trait each session
+- 5 traits measured: Risk Tolerance, Logic vs Emotion, Social Dynamics, Leadership Style, Financial Patterns
+- Slider-based answers (0–100), trait progress bar shown live
 
-### Prerequisites
+### 2. 📊 Dashboard
+- **Radar Chart** — visual web of all 5 traits
+- **Bar Chart** — score breakdown with confidence %
+- **Personality Type** — classified into 7 types (Risk Explorer, Analytical Planner, etc.)
+- **AI Advice** — personalized suggestions based on your scores
+- **Evolution Tracker** — bar graph showing how traits change across sessions
+- **PDF Report** — download full report with traits, strengths, weaknesses, suggestions
 
-- Node.js 18+ and npm/pnpm
-- Python 3.10+
-- PostgreSQL 14+ (or use Supabase)
-- Git
+### 3. 🔮 Scenario Simulator
+- 4 preset scenarios: Career, Purchase, Leadership, Social
+- Click an option → twin predicts what you'd actually choose
+- **Accuracy Test** — record your real choice, track twin accuracy %
+- **Scenario Recommendations** — AI suggests which scenario fits your profile
+- **What-If Simulator** — adjust trait sliders, compare Original You vs Modified You
+- **Custom Scenario** — type any situation, get a prediction
 
-### Frontend Setup
+### 4. 💬 Twin Chat
+- Chat with your AI twin that responds as you would
+- **Mood Detection** — detects Happy/Stressed/Sad from text, adjusts risk in reply
+- **Dual Twin** — shows Real You vs Ideal You side by side
+- **Bias Detector** — flags overthinking, peer pressure, fear of failure
+- **Goal Alignment** — set your goals, get warned when decisions conflict
+- **Adaptive Learning** — twin updates trait weights after each decision
+- **Voice Input** — speak your question (Chrome supported)
+- **Voice Response** — twin speaks the reply back
 
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Tech |
+|-------|------|
+| Frontend | Next.js 16, TypeScript, Tailwind CSS |
+| UI Components | shadcn/ui, Recharts |
+| Backend | FastAPI (Python) |
+| ML | scikit-learn, numpy, scipy |
+| Deploy | Vercel (frontend) + Render (backend) |
+
+---
+
+## ⚙️ How to Run Locally
+
+### Frontend
 ```bash
-# Clone or download project
-cd /path/to/twinmind
-
-# Install dependencies
 pnpm install
-
-# Create .env.local
-cp .env.example .env.local
-
-# Edit .env.local with backend URL
-# NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
-
-# Start development server
 pnpm dev
+# → http://localhost:3000
 ```
 
-Frontend will be available at `http://localhost:3000`
-
-### Backend Setup
-
+### Backend
 ```bash
-# Navigate to backend
 cd backend
-
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -e .
-
-# Create .env
-cp .env.example .env
-
-# Edit .env with database credentials
-# DATABASE_URL=postgresql://user:password@localhost/twinmind
-
-# Run migrations (if not using Supabase)
-# psql -U postgres -f scripts/schema.sql
-
-# Start FastAPI server
-python main.py
+pip install -r requirements.txt
+py -m uvicorn app:app --reload --port 8000
+# → http://localhost:8000
 ```
 
-Backend will be available at `http://localhost:8000`
-
-### Database Setup
-
-**Option 1: Supabase (Recommended)**
-1. Create Supabase project at https://supabase.com
-2. Copy project credentials
-3. Run migration from Supabase dashboard:
-   - Go to SQL Editor
-   - Create new query
-   - Paste contents from `/vercel/share/v0-project/scripts/01_create_schema.sql`
-   - Execute
-
-**Option 2: Local PostgreSQL**
-```bash
-createdb twinmind
-psql -U postgres -d twinmind -f scripts/01_create_schema.sql
-```
-
-## Project Structure
-
-```
-twinmind/
-├── app/
-│   ├── page.tsx                 # Landing page
-│   ├── layout.tsx               # Root layout with metadata
-│   ├── globals.css              # Theme tokens and styles
-│   ├── quiz/
-│   │   └── page.tsx             # Interactive quiz (15 questions)
-│   ├── dashboard/
-│   │   └── page.tsx             # Personality profile visualization
-│   ├── simulator/
-│   │   └── page.tsx             # What-if scenario simulator
-│   ├── admin/
-│   │   └── page.tsx             # Admin analytics dashboard
-│   └── api/
-│       ├── quiz-analysis/       # Quiz response analysis endpoint
-│       ├── predict/             # Behavior prediction endpoint
-│       └── simulate/            # Trait simulation endpoint
-├── components/
-│   └── ui/                      # shadcn/ui components
-├── lib/
-│   ├── api.ts                   # API service client
-│   └── utils.ts                 # Utility functions
-├── backend/
-│   ├── main.py                  # FastAPI application
-│   ├── personality_model.py     # ML analysis engine
-│   ├── pyproject.toml           # Python dependencies
-│   ├── .env.example             # Environment template
-│   └── README.md                # Backend documentation
-└── scripts/
-    └── 01_create_schema.sql     # Database migrations
-```
-
-## Features
-
-### 1. Personality Quiz
-- 15 carefully designed questions across 5 traits
-- 0-100 continuous scale responses
-- Real-time progress tracking
-- Validation and error handling
-
-### 2. Trait Analysis
-- Risk Tolerance assessment
-- Logic vs Emotion scoring
-- Social Dynamics evaluation
-- Leadership style analysis
-- Financial behavior patterns
-
-### 3. Personality Dashboard
-- Interactive radar chart showing trait profile
-- Bar chart comparison of trait scores
-- Confidence scoring for each trait
-- Trait reasoning and insights
-- Seamless navigation to scenario simulator
-
-### 4. Scenario Simulator
-- 5+ real-world scenarios
-- Behavior prediction with confidence scores
-- Alternative behavior suggestions
-- Visual confidence indicators
-- What-if trait modification simulation
-
-### 5. Admin Dashboard
-- User metrics and growth trends
-- Quiz completion analytics
-- Trait distribution analysis
-- Model performance metrics
-- User management interface
-
-## API Endpoints
-
-### Quiz Analysis
-```
-POST /api/quiz-analysis
-Content-Type: application/json
-
-{
-  "userId": "user123",
-  "responses": [25, 35, 45, 55, 65, ...]  // 15 values (0-100)
-}
-
-Response: { traits, confidence, reasoning }
-```
-
-### Behavior Prediction
-```
-POST /api/predict
-Content-Type: application/json
-
-{
-  "userId": "user123",
-  "scenario": "career_risk",
-  "traits": { "Risk Tolerance": 65, ... }
-}
-
-Response: { predicted_behavior, confidence, reasoning, alternatives }
-```
-
-### Trait Simulation
-```
-POST /api/simulate
-Content-Type: application/json
-
-{
-  "userId": "user123",
-  "scenario": "career_risk",
-  "traitModifications": { "Risk Tolerance": 80 }
-}
-
-Response: { original_prediction, modified_prediction, changes }
-```
-
-## Environment Variables
-
-### Frontend (.env.local)
+### Environment
+Create `.env.local` in root:
 ```
 NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
 ```
 
-### Backend (.env)
-```
-PORT=8000
-DATABASE_URL=postgresql://user:password@host/database
-SUPABASE_URL=https://project.supabase.co
-SUPABASE_ANON_KEY=your-key
-SUPABASE_SERVICE_ROLE_KEY=your-key
-FRONTEND_URL=http://localhost:3000
-```
+---
 
-## Production Deployment
+## 🌐 Deploy
 
-### Frontend - Vercel (Recommended)
-
-1. **Push to GitHub:**
+### Frontend → Vercel
 ```bash
-git init
-git add .
-git commit -m "Initial commit"
-git push origin main
+pnpm add -g vercel
+vercel
+```
+Or connect GitHub repo at [vercel.com](https://vercel.com)
+
+Add environment variable in Vercel dashboard:
+```
+NEXT_PUBLIC_BACKEND_URL=https://your-backend.onrender.com
 ```
 
-2. **Deploy to Vercel:**
-   - Visit https://vercel.com
-   - Import GitHub repository
-   - Set environment variables:
-     - `NEXT_PUBLIC_BACKEND_URL` → Backend API URL
-   - Deploy
-
-### Backend - Render/Railway
-
-**Using Render:**
-
-1. Create `Dockerfile` in backend directory
-2. Push to GitHub
-3. Connect to Render.com
-4. Set environment variables
-5. Deploy
-
-**Using Railway:**
-
-1. Create `Procfile`:
-```
-web: gunicorn -w 4 -k uvicorn.workers.UvicornWorker main:app
-```
-
-2. Push to GitHub
-3. Connect Railway project
-4. Deploy
-
-### Database - Supabase
-
-Database is already configured in Supabase - no additional setup needed. Just ensure:
-- Schema is migrated
-- RLS policies are enabled
-- Connection string is secure
-
-## Technology Stack
-
-### Frontend
-- **Next.js 16** - React framework with App Router
-- **React 19** - UI library
-- **TypeScript** - Type safety
-- **Tailwind CSS** - Styling with v4
-- **Recharts** - Data visualization
-- **shadcn/ui** - Accessible components
-
-### Backend
-- **FastAPI** - Modern Python web framework
-- **scikit-learn** - ML library for analysis
-- **NumPy** - Numerical computing
-- **Pydantic** - Data validation
-- **Uvicorn** - ASGI server
-
-### Database
-- **PostgreSQL 14+** - Relational database
-- **Supabase** - PostgreSQL hosting + Auth
-- **Row Level Security** - Data access control
-
-## Security
-
-- ✅ Row Level Security (RLS) on all tables
-- ✅ Environment variables for sensitive data
-- ✅ CORS configured for frontend
-- ✅ Input validation on all endpoints
-- ✅ Type safety with TypeScript/Pydantic
-- ✅ No hardcoded credentials
-
-## Performance Optimization
-
-- Frontend: Next.js App Router with server components
-- Backend: Efficient ML model caching
-- Database: Indexed queries, connection pooling
-- Charts: Recharts with responsive containers
-- Lazy loading for admin data
-
-## Testing
-
-```bash
-# Frontend tests
-pnpm test
-
-# Backend tests
-pytest
-
-# End-to-end tests
-pnpm e2e
-```
-
-## Troubleshooting
-
-**Backend connection fails:**
-- Ensure backend is running: `python main.py`
-- Check `NEXT_PUBLIC_BACKEND_URL` in frontend .env
-- Verify CORS configuration
-
-**Database connection error:**
-- Verify PostgreSQL is running
-- Check connection string in `.env`
-- Run migrations if needed
-
-**Quiz submission fails:**
-- Ensure backend API is accessible
-- Check browser console for errors
-- Verify all 15 responses are provided
-
-## Future Enhancements
-
-- User authentication with Supabase Auth
-- Social sharing of personality profiles
-- Comparison with friends/colleagues
-- Historical trait tracking
-- Advanced ML model improvements
-- Mobile app (React Native)
-- Real-time multiplayer scenarios
-
-## Support
-
-For issues or questions:
-1. Check documentation in `backend/README.md`
-2. Review API error messages
-3. Check browser console for client-side errors
-4. Verify environment variables are set correctly
-
-## License
-
-MIT - Open source and free to use
-
-## Contributing
-
-Contributions welcome! Please:
-1. Fork the repository
-2. Create feature branch
-3. Submit pull request
+### Backend → Render
+1. Go to [render.com](https://render.com) → New Web Service
+2. Connect GitHub repo, set root directory to `backend`
+3. Build command: `pip install -r requirements.txt`
+4. Start command: `uvicorn app:app --host 0.0.0.0 --port $PORT`
 
 ---
 
-**Built with ❤️ using Next.js, FastAPI, and PostgreSQL**
+## 🎤 Demo Script (Presentation)
+
+> "TwinMind builds a digital clone of your personality in 3 steps."
+
+**Step 1 — Quiz (30 sec)**
+"User fills a 15-question quiz. Each question measures one of 5 personality traits on a 0–100 scale. Questions are randomized every session so no two users get the same set."
+
+**Step 2 — Profile (30 sec)**
+"The backend analyzes responses using a weighted ML model and generates trait scores with confidence percentages. The dashboard shows a radar chart, personality type classification, and AI-generated advice."
+
+**Step 3 — Prediction (1 min)**
+"Now the interesting part — the Scenario Simulator. User picks a real-life scenario like 'Should I take a risky startup job?' and clicks an option. The twin predicts what the user would actually choose based on their trait profile — not just a generic answer, but one that changes based on their specific Risk Tolerance, Leadership, and Financial scores."
+
+**Step 4 — What-If (30 sec)**
+"The What-If Simulator lets you ask: what if I was more risk-tolerant? Drag the slider up 30 points — the prediction changes from 'stable job' to 'go for the startup'. This shows how personality directly drives decisions."
+
+**Step 5 — Twin Chat (30 sec)**
+"Finally, Twin Chat. You can have a full conversation with your digital twin. It detects your mood from text, warns you about decision biases like overthinking or peer pressure, and even speaks the reply back using voice synthesis."
+
+---
+
+## 📁 Project Structure
+
+```
+├── app/
+│   ├── page.tsx          # Landing page
+│   ├── quiz/             # Personality quiz
+│   ├── dashboard/        # Trait analysis + charts
+│   ├── simulator/        # Scenario + What-If simulator
+│   ├── twin-chat/        # AI twin chat
+│   └── api/              # Next.js API routes → backend proxy
+├── backend/
+│   ├── app.py            # FastAPI server
+│   └── personality_model.py  # ML prediction engine
+├── components/ui/        # shadcn/ui components
+└── lib/api.ts            # Frontend API client
+```
