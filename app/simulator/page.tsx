@@ -61,9 +61,27 @@ function localPredict(scenarioId: string, traits: PersonalityTraits, chosenOptio
 
   // Detect which option was chosen — option1 = safe/cautious, option2 = bold/risky
   const isOption1 = lower.includes('stable') || lower.includes('save') || lower.includes('wait')
-    || lower.includes('consensus') || lower.includes('decline') || lower.includes('seek');
+    || lower.includes('consensus') || lower.includes('decline') || lower.includes('seek')
+    || lower.includes('politely') || lower.includes('longer') || lower.includes('corporate');
   const isOption2 = lower.includes('startup') || lower.includes('buy') || lower.includes('now')
-    || lower.includes('decisive') || lower.includes('attend') || lower.includes('enthusiast');
+    || lower.includes('decisive') || lower.includes('attend') || lower.includes('enthusiast')
+    || lower.includes('risky') || lower.includes('unilateral') || lower.includes('bold');
+
+  // Hard-coded option matching per scenario as final fallback
+  const scenarioOpt1Keywords: Record<string, string[]> = {
+    career_risk: ['stable', 'corporate'],
+    major_purchase: ['save', 'wait', 'longer'],
+    leadership_decision: ['consensus', 'compromise', 'seek'],
+    social_event: ['decline', 'politely'],
+  };
+  const scenarioOpt2Keywords: Record<string, string[]> = {
+    career_risk: ['startup', 'risky'],
+    major_purchase: ['buy', 'now'],
+    leadership_decision: ['decisive', 'unilateral'],
+    social_event: ['attend', 'enthusiast'],
+  };
+  const matchOpt1 = isOption1 || (scenarioOpt1Keywords[scenarioId] ?? []).some(k => lower.includes(k));
+  const matchOpt2 = isOption2 || (scenarioOpt2Keywords[scenarioId] ?? []).some(k => lower.includes(k));
 
   // Per-scenario, per-option, per-level predictions
   type Levels = { high: string; mid: string; low: string };
@@ -126,13 +144,13 @@ function localPredict(scenarioId: string, traits: PersonalityTraits, chosenOptio
   const level: 'high' | 'mid' | 'low' = p.val >= 62 ? 'high' : p.val >= 38 ? 'mid' : 'low';
 
   // Pick option bucket — if neither keyword matched, infer from trait level
-  const optionPred = isOption1 ? p.opt1 : isOption2 ? p.opt2 : (p.val >= 50 ? p.opt2 : p.opt1);
-  const altPred = isOption1 ? p.opt2 : p.opt1;
+  const optionPred = matchOpt1 ? p.opt1 : matchOpt2 ? p.opt2 : (p.val >= 50 ? p.opt2 : p.opt1);
+  const altPred = matchOpt1 ? p.opt2 : p.opt1;
 
   return {
     predicted_behavior: optionPred[level],
-    confidence: Math.min(0.94, 0.62 + Math.abs(p.val - 50) * 0.004),
-    reasoning: `${p.key}: ${Math.round(p.val)}% — ${level === 'high' ? 'above average' : level === 'low' ? 'below average' : 'moderate'}. You chose "${chosenOption}".`,
+    confidence: Math.min(0.94, (matchOpt1 ? 0.58 : 0.65) + Math.abs(p.val - 50) * 0.004),
+    reasoning: `${p.key}: ${Math.round(p.val)}% (${level}). You chose "${chosenOption}" — ${matchOpt1 ? 'the cautious path' : 'the bold path'}.`,
     alternative_behaviors: [altPred['mid'], 'A balanced approach was also possible.'],
     chosen_option: chosenOption,
   };
@@ -480,6 +498,12 @@ export default function SimulatorPage() {
                     </div>
                   ))}
                 </div>
+                {Object.values(traits).every(v => Math.round(v) === 50) && (
+                  <div className="mt-3 flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-2">
+                    <span className="text-amber-400 text-sm">⚠️</span>
+                    <p className="text-xs text-amber-400">All traits are at 50% — predictions will be generic. <Link href="/quiz" className="underline font-semibold">Take the quiz first</Link> for accurate results.</p>
+                  </div>
+                )}
               </div>
 
               {/* Feature 5: Recommendations */}
