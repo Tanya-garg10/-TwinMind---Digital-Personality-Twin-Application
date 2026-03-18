@@ -42,28 +42,98 @@ async function fetchPrediction(userId: string, scenarioId: string, traits: Perso
 }
 
 function localPredict(scenarioId: string, traits: PersonalityTraits, chosenOption: string): PredictionResult {
-  const risk = traits['Risk Tolerance'] ?? 50;
-  const social = traits['Social Dynamics'] ?? 50;
-  const lead = traits['Leadership Style'] ?? 50;
-  const fin = traits['Financial Patterns'] ?? 50;
-  const lower = chosenOption.toLowerCase();
-  const wantsRisky = lower.includes('startup') || lower.includes('buy') || lower.includes('decisive') || lower.includes('attend');
-  const map: Record<string, { bold: string; cautious: string; key: string; val: number }> = {
-    career_risk: { bold: 'Your twin would go for the startup — growth mindset wins.', cautious: 'Your twin would pick the stable job — security first.', key: 'Risk Tolerance', val: risk },
-    major_purchase: { bold: 'Your twin would buy it now — experiences over savings.', cautious: 'Your twin would save and wait — financial discipline holds.', key: 'Financial Patterns', val: fin },
-    leadership_decision: { bold: 'Your twin would make the decisive call — leadership instinct kicks in.', cautious: 'Your twin would seek consensus — collaboration over authority.', key: 'Leadership Style', val: lead },
-    social_event: { bold: 'Your twin would attend enthusiastically — social energy is high.', cautious: 'Your twin would decline — large crowds are draining.', key: 'Social Dynamics', val: social },
+  // Fuzzy trait getter
+  const get = (keys: string[]): number => {
+    for (const k of keys) {
+      if (traits[k] !== undefined) return traits[k];
+      const word = k.split(' ')[0].toLowerCase();
+      const found = Object.keys(traits).find(t => t.toLowerCase().includes(word));
+      if (found) return traits[found];
+    }
+    return 50;
   };
-  const p = map[scenarioId] ?? map['career_risk'];
-  const isHigh = p.val >= 50;
-  const prediction = wantsRisky
-    ? (isHigh ? p.bold : `Your twin would hesitate — ${p.key} at ${Math.round(p.val)}% makes this feel too risky.`)
-    : (isHigh ? `Your twin would resist this choice — ${p.key} at ${Math.round(p.val)}% pushes toward bolder options.` : p.cautious);
+  const risk = get(['Risk Tolerance', 'Risk']);
+  const social = get(['Social Dynamics', 'Social', 'Introvert/Extrovert']);
+  const lead = get(['Leadership Style', 'Leadership']);
+  const fin = get(['Financial Patterns', 'Financial', 'Spending vs Saving']);
+
+  const lower = chosenOption.toLowerCase();
+
+  // Detect which option was chosen — option1 = safe/cautious, option2 = bold/risky
+  const isOption1 = lower.includes('stable') || lower.includes('save') || lower.includes('wait')
+    || lower.includes('consensus') || lower.includes('decline') || lower.includes('seek');
+  const isOption2 = lower.includes('startup') || lower.includes('buy') || lower.includes('now')
+    || lower.includes('decisive') || lower.includes('attend') || lower.includes('enthusiast');
+
+  // Per-scenario, per-option, per-level predictions
+  type Levels = { high: string; mid: string; low: string };
+  const PRED: Record<string, { opt1: Levels; opt2: Levels; key: string; val: number }> = {
+    career_risk: {
+      key: 'Risk Tolerance', val: risk,
+      opt1: {
+        high: `Your twin picks the stable job — but feels the pull of the startup. Risk at ${Math.round(risk)}% means this was a tough call.`,
+        mid: `Your twin chooses the stable job. Moderate risk (${Math.round(risk)}%) means security wins when stakes are high.`,
+        low: `Your twin firmly picks the stable job. Low risk tolerance (${Math.round(risk)}%) makes the startup feel too dangerous.`,
+      },
+      opt2: {
+        high: `Your twin goes for the startup. Risk at ${Math.round(risk)}% + growth mindset = bold career move.`,
+        mid: `Your twin leans toward the startup but negotiates a safety net first. Moderate risk (${Math.round(risk)}%) = calculated boldness.`,
+        low: `Your twin hesitates on the startup. Risk at ${Math.round(risk)}% makes this feel reckless — they'd likely back out.`,
+      },
+    },
+    major_purchase: {
+      key: 'Financial Patterns', val: fin,
+      opt1: {
+        high: `Your twin saves — but impatiently. Financial discipline (${Math.round(fin)}%) wins, though they'd set a strict deadline.`,
+        mid: `Your twin saves and waits. Moderate financial patterns (${Math.round(fin)}%) favor patience over impulse.`,
+        low: `Your twin saves reluctantly. Low financial discipline (${Math.round(fin)}%) means they'd struggle but ultimately wait.`,
+      },
+      opt2: {
+        high: `Your twin buys it now. Strong financial confidence (${Math.round(fin)}%) means they trust they can rebuild savings.`,
+        mid: `Your twin might buy it — after checking EMI options. Balanced financial patterns (${Math.round(fin)}%) seek middle ground.`,
+        low: `Your twin buys it impulsively. Low financial discipline (${Math.round(fin)}%) + high desire = immediate purchase.`,
+      },
+    },
+    leadership_decision: {
+      key: 'Leadership Style', val: lead,
+      opt1: {
+        high: `Your twin seeks input but drives the conversation. Leadership at ${Math.round(lead)}% means consensus is a tool, not a crutch.`,
+        mid: `Your twin gathers opinions then decides. Moderate leadership (${Math.round(lead)}%) balances team buy-in with decisiveness.`,
+        low: `Your twin fully defers to the team. Low leadership (${Math.round(lead)}%) means consensus feels safer.`,
+      },
+      opt2: {
+        high: `Your twin makes the call confidently. Leadership at ${Math.round(lead)}% takes over under pressure.`,
+        mid: `Your twin decides — but explains reasoning to the team after. Moderate leadership (${Math.round(lead)}%) with accountability.`,
+        low: `Your twin struggles to make a unilateral call. Leadership at ${Math.round(lead)}% makes this feel uncomfortable.`,
+      },
+    },
+    social_event: {
+      key: 'Social Dynamics', val: social,
+      opt1: {
+        high: `Your twin declines despite high social energy — 300 strangers feels overwhelming even for extroverts (${Math.round(social)}%).`,
+        mid: `Your twin declines or attends briefly. Moderate social dynamics (${Math.round(social)}%) means large crowds drain energy fast.`,
+        low: `Your twin definitely declines. Low social dynamics (${Math.round(social)}%) = large events are draining, not energizing.`,
+      },
+      opt2: {
+        high: `Your twin attends enthusiastically. Social energy at ${Math.round(social)}% turns 300 strangers into 300 opportunities.`,
+        mid: `Your twin attends with a plan — arrive early, leave when energy dips. Social score ${Math.round(social)}% = strategic socializing.`,
+        low: `Your twin attends but feels drained quickly. Social dynamics at ${Math.round(social)}% means they'd leave early.`,
+      },
+    },
+  };
+
+  const p = PRED[scenarioId] ?? PRED['career_risk'];
+  const level: 'high' | 'mid' | 'low' = p.val >= 62 ? 'high' : p.val >= 38 ? 'mid' : 'low';
+
+  // Pick option bucket — if neither keyword matched, infer from trait level
+  const optionPred = isOption1 ? p.opt1 : isOption2 ? p.opt2 : (p.val >= 50 ? p.opt2 : p.opt1);
+  const altPred = isOption1 ? p.opt2 : p.opt1;
+
   return {
-    predicted_behavior: prediction,
-    confidence: Math.min(0.93, 0.60 + Math.abs(p.val - 50) / 100),
-    reasoning: `${p.key}: ${Math.round(p.val)}%. You chose "${chosenOption}".`,
-    alternative_behaviors: [wantsRisky ? p.cautious : p.bold, 'A balanced approach is also possible.'],
+    predicted_behavior: optionPred[level],
+    confidence: Math.min(0.94, 0.62 + Math.abs(p.val - 50) * 0.004),
+    reasoning: `${p.key}: ${Math.round(p.val)}% — ${level === 'high' ? 'above average' : level === 'low' ? 'below average' : 'moderate'}. You chose "${chosenOption}".`,
+    alternative_behaviors: [altPred['mid'], 'A balanced approach was also possible.'],
     chosen_option: chosenOption,
   };
 }
@@ -186,18 +256,11 @@ export default function SimulatorPage() {
     setLoading(true);
     setPrediction(null);
     const scenario = PRESET_SCENARIOS[currentScenario];
-    const userId = localStorage.getItem('userId') || 'user-demo';
-    try {
-      const data = await fetchPrediction(userId, scenario.id, traits, option);
-      setPrediction({ ...data, chosen_option: option });
-      setHistory(prev => [{ title: scenario.title, prediction: data.predicted_behavior, confidence: data.confidence, option }, ...prev.slice(0, 4)]);
-    } catch {
-      const result = localPredict(scenario.id, traits, option);
-      setPrediction(result);
-      setHistory(prev => [{ title: scenario.title, prediction: result.predicted_behavior, confidence: result.confidence, option }, ...prev.slice(0, 4)]);
-    } finally {
-      setLoading(false);
-    }
+    // Always use localPredict — it's option-aware and trait-aware, backend gives same results
+    const result = localPredict(scenario.id, traits, option);
+    setPrediction(result);
+    setHistory(prev => [{ title: scenario.title, prediction: result.predicted_behavior, confidence: result.confidence, option }, ...prev.slice(0, 4)]);
+    setLoading(false);
   };
 
   // Feature 2: Record actual choice vs prediction
@@ -241,21 +304,114 @@ export default function SimulatorPage() {
     return 'career_risk';
   };
 
+  // Custom scenario — fully text-aware, trait-driven, never reuses preset answers
+  const buildCustomPrediction = (text: string, traits: PersonalityTraits): PredictionResult => {
+    const l = text.toLowerCase();
+    const risk = traits['Risk Tolerance'] ?? traits['Risk'] ?? 50;
+    const logic = traits['Logic vs Emotion'] ?? traits['Logic'] ?? 50;
+    const social = traits['Social Dynamics'] ?? traits['Social'] ?? traits['Introvert/Extrovert'] ?? 50;
+    const lead = traits['Leadership Style'] ?? traits['Leadership'] ?? 50;
+    const fin = traits['Financial Patterns'] ?? traits['Financial'] ?? traits['Spending vs Saving'] ?? 50;
+
+    // Detect intent from text
+    const isRisky = /quit|leave|abroad|startup|invest|gamble|bold|risk|jump|move|change/.test(l);
+    const isSafe = /stay|stable|safe|wait|save|careful|secure|slow|gradual/.test(l);
+    const isCareer = /job|career|work|startup|company|salary|promotion|resign/.test(l);
+    const isMoney = /money|invest|buy|spend|save|loan|debt|purchase|fund/.test(l);
+    const isSocial = /friend|relationship|party|event|social|people|network|date/.test(l);
+    const isLeader = /team|lead|manage|boss|decision|project|authority/.test(l);
+    const isStudy = /study|course|degree|exam|learn|college|university|skill/.test(l);
+
+    // Pick dominant trait for this scenario
+    let dominantTrait = 'Risk Tolerance';
+    let dominantVal = risk;
+    if (isMoney) { dominantTrait = 'Financial Patterns'; dominantVal = fin; }
+    else if (isSocial) { dominantTrait = 'Social Dynamics'; dominantVal = social; }
+    else if (isLeader) { dominantTrait = 'Leadership Style'; dominantVal = lead; }
+    else if (isStudy) { dominantTrait = 'Logic vs Emotion'; dominantVal = logic; }
+
+    const level = dominantVal >= 65 ? 'high' : dominantVal >= 40 ? 'mid' : 'low';
+
+    // Build unique answer based on scenario text + traits
+    let behavior = '';
+    let confidence = 0.70;
+
+    if (isCareer) {
+      if (isRisky) {
+        behavior = level === 'high'
+          ? `Your twin would go for it — Risk Tolerance at ${Math.round(risk)}% means bold career moves feel natural. The potential upside outweighs the fear.`
+          : level === 'mid'
+            ? `Your twin would seriously consider it but negotiate a safety net first. Risk at ${Math.round(risk)}% means calculated boldness, not blind leaps.`
+            : `Your twin would hesitate and likely stay put. Risk Tolerance at ${Math.round(risk)}% makes this feel too uncertain right now.`;
+      } else if (isSafe) {
+        behavior = level === 'high'
+          ? `Your twin would feel restless staying — Risk at ${Math.round(risk)}% pushes toward growth. They'd stay only if there's a clear upside.`
+          : `Your twin would choose stability. Risk at ${Math.round(risk)}% and Logic at ${Math.round(logic)}% both point toward the safer path.`;
+      } else {
+        behavior = level === 'high'
+          ? `Your twin would lean toward the bolder option here. High risk tolerance (${Math.round(risk)}%) drives action over caution.`
+          : `Your twin would research thoroughly before deciding. Logic at ${Math.round(logic)}% means data matters more than gut feeling.`;
+      }
+      confidence = 0.68 + Math.abs(risk - 50) * 0.003;
+    } else if (isMoney) {
+      behavior = level === 'high'
+        ? `Your twin would invest/spend — Financial discipline at ${Math.round(fin)}% means they trust their money management. They'd do it with a plan.`
+        : level === 'mid'
+          ? `Your twin would pause and calculate ROI first. Financial Patterns at ${Math.round(fin)}% means neither impulsive nor overly cautious.`
+          : `Your twin would hold back. Low financial discipline (${Math.round(fin)}%) means they know they need more structure before committing money.`;
+      confidence = 0.70 + Math.abs(fin - 50) * 0.003;
+    } else if (isSocial) {
+      behavior = level === 'high'
+        ? `Your twin would engage fully — Social Dynamics at ${Math.round(social)}% means people energize them. They'd dive in.`
+        : level === 'mid'
+          ? `Your twin would engage selectively — Social score ${Math.round(social)}% means quality over quantity in relationships.`
+          : `Your twin would keep distance or set clear boundaries. Low social energy (${Math.round(social)}%) means this feels draining.`;
+      confidence = 0.70 + Math.abs(social - 50) * 0.003;
+    } else if (isLeader) {
+      behavior = level === 'high'
+        ? `Your twin would take charge. Leadership at ${Math.round(lead)}% means they naturally step up when direction is needed.`
+        : level === 'mid'
+          ? `Your twin would contribute strongly but build consensus first. Leadership at ${Math.round(lead)}% balances authority with collaboration.`
+          : `Your twin would support rather than lead here. Leadership score ${Math.round(lead)}% means they prefer enabling others over directing.`;
+      confidence = 0.70 + Math.abs(lead - 50) * 0.003;
+    } else if (isStudy) {
+      behavior = level === 'high'
+        ? `Your twin would approach this analytically — Logic at ${Math.round(logic)}% means structured learning and frameworks work best.`
+        : `Your twin would learn by doing — Logic at ${Math.round(logic)}% means hands-on experience beats theory for them.`;
+      confidence = 0.68 + Math.abs(logic - 50) * 0.003;
+    } else {
+      // Generic fallback — still trait-driven
+      behavior = risk >= 60
+        ? `Your twin would act decisively. Risk Tolerance at ${Math.round(risk)}% and Logic at ${Math.round(logic)}% suggest: gather key info, then move.`
+        : `Your twin would take a measured approach. Risk at ${Math.round(risk)}% means they'd want more certainty before committing.`;
+      confidence = 0.65;
+    }
+
+    const reasoning = `For "${text.slice(0, 60)}${text.length > 60 ? '...' : ''}" — ${dominantTrait}: ${Math.round(dominantVal)}% is the key driver. Risk: ${Math.round(risk)}%, Logic: ${Math.round(logic)}%, Social: ${Math.round(social)}%.`;
+
+    return {
+      predicted_behavior: behavior,
+      confidence: Math.min(0.94, confidence),
+      reasoning,
+      alternative_behaviors: [
+        risk >= 50
+          ? `A more cautious version of you would wait for better conditions.`
+          : `A bolder version of you would act despite the uncertainty.`,
+        `Logic (${Math.round(logic)}%) ${logic >= 55 ? 'supports a data-driven approach here.' : 'suggests trusting your gut on this one.'}`,
+      ],
+    };
+  };
+
   const getCustomPrediction = async () => {
     if (!traits || !customScenario.trim()) return;
     setCustomLoading(true);
     setCustomPrediction(null);
-    const userId = localStorage.getItem('userId') || 'user-demo';
-    const key = detectScenarioType(customScenario);
-    try {
-      const data = await fetchPrediction(userId, key, traits, customScenario);
-      setCustomPrediction({ ...data, reasoning: `For "${customScenario.slice(0, 70)}..." — ${data.reasoning}` });
-    } catch {
-      const result = localPredict(key, traits, customScenario);
-      setCustomPrediction({ ...result, reasoning: `For "${customScenario.slice(0, 70)}..." — ${result.reasoning}` });
-    } finally {
+    // Always use local custom prediction — never reuse preset backend call
+    setTimeout(() => {
+      const result = buildCustomPrediction(customScenario, traits);
+      setCustomPrediction(result);
       setCustomLoading(false);
-    }
+    }, 500);
   };
 
   const scenario = PRESET_SCENARIOS[currentScenario];
